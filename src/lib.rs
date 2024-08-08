@@ -30,6 +30,10 @@ use embedded_hal::i2c::{I2c, Error};
 
 //mod sensor_status;
 //pub use crate::sensor_status::SensorStatus;
+mod sensor_status;
+#[allow(unused_imports)]
+pub use crate::sensor_status::SensorStatus;
+
 
 
 /// Sensor Address
@@ -103,6 +107,11 @@ mod sensor_test {
         assert_eq!(buf, vec![3, 4]);
 
         i2c.done();
+    }
+
+    #[test]
+    fn get_status() {
+    
     }
 
 }
