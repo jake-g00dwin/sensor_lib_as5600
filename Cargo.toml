@@ -12,11 +12,11 @@ license = "BSD-3-Clause"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 # This should be correct
 [dependencies]
-embedded-hal = "0.2.7"
+embedded-hal = "1.0.0"
 
 # Suff that only get's included for examples, tests and benchmarks
 [dev-dependencies]
-embedded-hal-mock = "0.9.0"
+embedded-hal-mock = "0.11.1"
 
 #For future use: this will help with the transision from 0.2.7 --> 1.0.0
 #[patch.crates-io]
