@@ -20,9 +20,18 @@ impl SensorStatus{
         SensorStatus{ status }
     }
 
-    pub fn is_MagnetHigh(self) -> bool {
+    pub fn is_magnet_high(&self) -> bool {
         (self.status & MAG_HIGH_BM) == MAGNET_HIGH
     }
+
+    pub fn is_magnet_low(&self) -> bool {
+        (self.status & MAG_LOW_BM) == MAGNET_LOW
+    }
+
+    pub fn is_magnet_detected(&self) -> bool {
+        (self.status & MAG_DETECTED_BM) == MAGNET_DETECTED 
+    }
+
 }
 
 #[cfg(test)]
@@ -42,8 +51,24 @@ mod test_status {
     }
 
     #[test]
-    fn magnetHighStatusFunc() {
-        let s = SensorStatus::new(0x08);
-        assert_eq!(s.is_MagnetHigh(), true);
+    fn magnet_high_status() {
+        let s = SensorStatus::new(MAGNET_HIGH);
+        assert_eq!(s.is_magnet_high(), true);
+        assert_eq!(s.is_magnet_low(), false);
+        assert_eq!(s.is_magnet_detected(), false);
+    }
+
+    #[test]
+    fn magnet_low_status() {
+        let s = SensorStatus::new(MAGNET_LOW);
+        assert_eq!(s.is_magnet_low(), true);
+        assert_eq!(s.is_magnet_high(), false);
+        assert_eq!(s.is_magnet_detected(), false);
+    }
+
+    #[test]
+    fn magnet_detected_status() {
+        let s = SensorStatus::new(MAGNET_DETECTED);
+        assert_eq!(s.is_magnet_detected(), true);
     }
 }
