@@ -34,6 +34,15 @@ mod sensor_status;
 #[allow(unused_imports)]
 pub use crate::sensor_status::SensorStatus;
 
+mod registers;
+#[allow(unused_imports)]
+pub use crate::registers::{
+    ConfigRegisters,
+    OutputRegisters,
+    StatusRegisters,
+    BurnCommands,
+};
+
 
 
 /// Sensor Address
@@ -41,8 +50,6 @@ pub const SENSOR_ADDR: u8 = 0b0011_1010; // = 0x40
 
 pub const STARTUP_DELAY_NS: u8 = 0;
 pub const MAX_ATTEMPTS: usize = 3;
-
-pub const STATUS_REG: u8 = 0x04;
 
 
 pub struct AS5600<I2C>{
@@ -54,10 +61,11 @@ impl <I2C: I2c> AS5600<I2C> {
         Self { i2c }
     }
 
-    pub fn read_status(&mut self) -> Result<u8, I2C::Error> {
+    pub fn read_status(&mut self) -> Result<SensorStatus, I2C::Error> {
         let mut status = [0];
-        self.i2c.write_read(SENSOR_ADDR, &[STATUS_REG], &mut status)?;
-        Ok(status[0])
+        self.i2c.write_read(SENSOR_ADDR, &[StatusRegisters::Status as u8], &mut status)?;
+        //Ok(status[0])
+        Ok(SensorStatus::new(0x00))
     }
 
     //Example from the embedded-hal 1.0.0 docs
