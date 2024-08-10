@@ -14,9 +14,9 @@
 
 #![cfg_attr(not(test), no_std)]
 
-#[allow(unused_imports)]
-#[macro_use]
-extern crate alloc;
+//#[allow(unused_imports)]
+//#[macro_use]
+//extern crate alloc;
 
 /*
 use embedded_hal::blocking::{
@@ -62,10 +62,13 @@ impl <I2C: I2c> AS5600<I2C> {
     }
 
     pub fn read_status(&mut self) -> Result<SensorStatus, I2C::Error> {
-        let mut status = [0];
-        self.i2c.write_read(SENSOR_ADDR, &[StatusRegisters::Status as u8], &mut status)?;
-        //Ok(status[0])
-        Ok(SensorStatus::new(0x00))
+        let mut buf: [u8; 1] = [0x00];
+        
+        self.i2c.write(SENSOR_ADDR, &[StatusRegisters::Status as u8])?;
+
+        self.i2c.read(SENSOR_ADDR, &mut buf)?;
+
+        Ok(SensorStatus::new(buf[0]))
     }
 
     //Example from the embedded-hal 1.0.0 docs
@@ -118,8 +121,28 @@ mod sensor_test {
     }
 
     #[test]
-    fn get_status() {
-    
+    fn get_status() { 
+        let expectations = [
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![StatusRegisters::Status as u8]
+                ),
+            I2cTransaction::read(
+                SENSOR_ADDR,
+                vec![1<<5]
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expectations);
+       
+        let mut sensor = AS5600::new(i2c);
+        let status = sensor.read_status();
+        assert!(status.is_ok());
+        
+        let status = status.unwrap();
+        assert!(status.is_magnet_detected());
+        
+        sensor.i2c.done();
     }
 
 }
