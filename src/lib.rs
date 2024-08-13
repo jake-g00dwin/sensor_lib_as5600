@@ -25,7 +25,7 @@ use embedded_hal::blocking::{
 };
 */
 
-use embedded_hal::i2c::{I2c, Error};
+use embedded_hal::i2c::{I2c, ErrorKind};
 
 
 //mod sensor_status;
@@ -65,7 +65,6 @@ impl <I2C: I2c> AS5600<I2C> {
         let mut buf: [u8; 1] = [0x00];
         
         self.i2c.write(SENSOR_ADDR, &[StatusRegisters::Status as u8])?;
-
         self.i2c.read(SENSOR_ADDR, &mut buf)?;
 
         Ok(SensorStatus::new(buf[0]))
@@ -88,6 +87,7 @@ impl <I2C: I2c> AS5600<I2C> {
 
 #[cfg(test)]
 mod sensor_test {
+    use embedded_hal::i2c::ErrorKind;
     use embedded_hal_mock::eh1::i2c::{
       Mock as I2cMock,
       Transaction as I2cTransaction,
@@ -141,6 +141,36 @@ mod sensor_test {
         
         let status = status.unwrap();
         assert!(status.is_magnet_detected());
+        
+        sensor.i2c.done();
+    }
+
+    #[test]
+    fn read_status_bus_error_retries() {
+        let expectations = [
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![StatusRegisters::Status as u8]
+                ),
+            I2cTransaction::read(
+                SENSOR_ADDR,
+                vec![1<<5]
+                ).with_error(ErrorKind::Bus),
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![StatusRegisters::Status as u8]
+                ),
+            I2cTransaction::read(
+                SENSOR_ADDR,
+                vec![1<<5]).with_error(ErrorKind::Bus),
+        ];
+        
+        let i2c = I2cMock::new(&expectations);
+
+        let mut sensor = AS5600::new(i2c);
+        sensor.read_status();
+        //let err = sensor.read_status().unwrap_err();
+        //assert_eq!(err, ErrorKind::Bus);
         
         sensor.i2c.done();
     }
