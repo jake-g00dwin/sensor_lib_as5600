@@ -52,6 +52,11 @@ pub const STARTUP_DELAY_NS: u8 = 0;
 pub const MAX_ATTEMPTS: usize = 3;
 
 
+fn bytes_to_u16(bytes: [u8; 2]) -> u16 {
+    let value: u16 = ((bytes[0] as u16) << 8)|((bytes[1] as u16));
+    return value;
+}
+
 pub struct AS5600<I2C>{
     i2c: I2C,
 }
@@ -91,9 +96,8 @@ impl <I2C: I2c> AS5600<I2C> {
             &mut rbuf,
         )?;
         
-        let start = ((rbuf[0] as u16) << 8)|((rbuf[1] as u16));
-
-        Ok(start)
+        
+        Ok(bytes_to_u16(rbuf))
     }
 
     //Example from the embedded-hal 1.0.0 docs
