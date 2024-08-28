@@ -146,7 +146,7 @@ mod sensor_test {
     }
 
     #[test]
-    fn read_status_bus_error_retries() {
+    fn read_status_bus_error() {
         let expectations = [
             I2cTransaction::write(
                 SENSOR_ADDR,
@@ -156,21 +156,15 @@ mod sensor_test {
                 SENSOR_ADDR,
                 vec![1<<5]
                 ).with_error(ErrorKind::Bus),
-            I2cTransaction::write(
-                SENSOR_ADDR,
-                vec![StatusRegisters::Status as u8]
-                ),
-            I2cTransaction::read(
-                SENSOR_ADDR,
-                vec![1<<5]).with_error(ErrorKind::Bus),
         ];
         
         let i2c = I2cMock::new(&expectations);
 
+        //SHOULD RETURN AN Result<SensorStatus, I2C::Error>
+        //This isn't the case however?
         let mut sensor = AS5600::new(i2c);
-        sensor.read_status();
-        //let err = sensor.read_status().unwrap_err();
-        //assert_eq!(err, ErrorKind::Bus);
+        let err = sensor.read_status().unwrap_err();
+        assert_eq!(err, ErrorKind::Bus);
         
         sensor.i2c.done();
     }
