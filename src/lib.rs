@@ -74,6 +74,25 @@ impl <I2C: I2c> AS5600<I2C> {
     }
 
     pub fn config_start_position(&mut self, start: u16) -> Result<u16, I2C::Error> {
+        let data: [u8; 2];
+        data = start.to_be_bytes();
+        
+        let buf: [u8; 3] = [(ConfigRegisters::ZPosHi as u8), data[0], data[1]];
+        let mut rbuf: [u8; 2] = [0x00, 0x00];
+
+        self.i2c.write(
+            SENSOR_ADDR,
+            &buf,
+        )?;
+        
+        self.i2c.write_read(
+            SENSOR_ADDR,
+            &[ConfigRegisters::ZPosHi as u8],
+            &mut rbuf,
+        )?;
+        
+        let start = ((rbuf[0] as u16) << 8)|((rbuf[1] as u16));
+
         Ok(start)
     }
 
@@ -191,6 +210,31 @@ mod sensor_test {
         let start: u16 = 0;
         let result = sensor.config_start_position(start);
         assert_eq!(result.unwrap(), 0);
+
+        sensor.i2c.done();
+    }
+
+    #[test]
+    fn test_configure_start_max_value() {
+        let expect = [
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::ZPosHi as u8), 0x0F, 0xFF]
+            ),
+            I2cTransaction::write_read(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::ZPosHi as u8)],
+                vec![0x0F, 0xFF],
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expect);
+
+        let mut sensor = AS5600::new(i2c);
+      
+        let start: u16 = 4095;
+        let result = sensor.config_start_position(start);
+        assert_eq!(result.unwrap(), 4095);
 
         sensor.i2c.done();
     }
