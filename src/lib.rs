@@ -64,10 +64,17 @@ impl <I2C: I2c> AS5600<I2C> {
     pub fn read_status(&mut self) -> Result<SensorStatus, I2C::Error> {
         let mut buf: [u8; 1] = [0x00];
         
-        self.i2c.write(SENSOR_ADDR, &[StatusRegisters::Status as u8])?;
-        self.i2c.read(SENSOR_ADDR, &mut buf)?;
+        self.i2c.write_read(
+            SENSOR_ADDR,
+            &[StatusRegisters::Status as u8],
+            &mut buf
+        )?;
 
         Ok(SensorStatus::new(buf[0]))
+    }
+
+    pub fn config_start_position(&mut self, start: u16) -> Result<u16, I2C::Error> {
+        Ok(start)
     }
 
     //Example from the embedded-hal 1.0.0 docs
@@ -123,12 +130,9 @@ mod sensor_test {
     #[test]
     fn get_status() { 
         let expectations = [
-            I2cTransaction::write(
+            I2cTransaction::write_read(
                 SENSOR_ADDR,
-                vec![StatusRegisters::Status as u8]
-                ),
-            I2cTransaction::read(
-                SENSOR_ADDR,
+                vec![StatusRegisters::Status as u8],
                 vec![1<<5]
             ),
         ];
@@ -148,12 +152,9 @@ mod sensor_test {
     #[test]
     fn read_status_bus_error() {
         let expectations = [
-            I2cTransaction::write(
+            I2cTransaction::write_read(
                 SENSOR_ADDR,
-                vec![StatusRegisters::Status as u8]
-                ),
-            I2cTransaction::read(
-                SENSOR_ADDR,
+                vec![StatusRegisters::Status as u8],
                 vec![1<<5]
                 ).with_error(ErrorKind::Bus),
         ];
@@ -169,4 +170,38 @@ mod sensor_test {
         sensor.i2c.done();
     }
 
+    #[test]
+    fn test_configure_start_position() {
+        let expect = [
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::ZPosHi as u8), 0x00, 0x00]
+            ),
+            I2cTransaction::write_read(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::ZPosHi as u8)],
+                vec![0x00, 0x00],
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expect);
+
+        let mut sensor = AS5600::new(i2c);
+      
+        let start: u16 = 0;
+        let result = sensor.config_start_position(start);
+        assert_eq!(result.unwrap(), 0);
+
+        sensor.i2c.done();
+    }
+
+    #[test]
+    fn test_config_stop_position() {
+        assert!(false);
+    }
+
+    #[test]
+    fn test_config_angular_range() {
+        assert!(false);
+    }
 }
