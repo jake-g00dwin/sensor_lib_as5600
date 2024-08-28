@@ -11,6 +11,7 @@ const MAG_HIGH_BM: u8 = 1<<3;
 const MAG_LOW_BM: u8 = 1<<4;
 const MAG_DETECTED_BM: u8 = 1<<5;
 
+#[derive(Debug)]
 pub struct SensorStatus{
     pub status: u8,
 }
