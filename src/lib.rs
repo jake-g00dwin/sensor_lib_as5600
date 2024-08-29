@@ -96,7 +96,27 @@ impl <I2C: I2c> AS5600<I2C> {
             &mut rbuf,
         )?;
         
+        Ok(bytes_to_u16(rbuf))
+    }
+
+    pub fn config_stop_position(&mut self, stop: u16) -> Result<u16, I2C::Error> {
+        let data: [u8; 2];
+        data = stop.to_be_bytes();
         
+        let buf: [u8; 3] = [(ConfigRegisters::MPosHi as u8), data[0], data[1]];
+        let mut rbuf: [u8; 2] = [0x00, 0x00]; 
+
+        self.i2c.write(
+            SENSOR_ADDR,
+            &buf,
+        )?;
+      
+        self.i2c.write_read(
+            SENSOR_ADDR,
+            &[ConfigRegisters::MPosHi as u8],
+            &mut rbuf,
+        )?;
+
         Ok(bytes_to_u16(rbuf))
     }
 
@@ -245,7 +265,27 @@ mod sensor_test {
 
     #[test]
     fn test_config_stop_position() {
-        assert!(false);
+        let expect = [
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::MPosHi as u8), 0x0F, 0xFF]
+            ),
+            I2cTransaction::write_read(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::MPosHi as u8)],
+                vec![0x0F, 0xFF],
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expect);
+
+        let mut sensor = AS5600::new(i2c);
+      
+        let start: u16 = 0x0FFF;
+        let result = sensor.config_stop_position(start);
+        assert_eq!(result.unwrap(), 0x0FFF);
+
+        sensor.i2c.done();
     }
 
     #[test]
