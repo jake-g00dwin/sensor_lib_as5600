@@ -111,13 +111,13 @@ impl <I2C: I2c> AS5600<I2C> {
     }
 
     pub fn read_agc(&mut self) -> Result<u16, I2C::Error> {
-        let data: u16 = 0;
-        Ok(data)
+        let agc = self.read_12bits(StatusRegisters::AGC as u8)?;
+        Ok(agc)
     }
 
     pub fn read_magnitude(&mut self) -> Result<u16, I2C::Error> {
-        let data: u16 = 0;
-        Ok(data)
+        let magnitude = self.read_12bits(StatusRegisters::MagnitudeHi as u8)?;
+        Ok(magnitude)
     }
 
     pub fn read_angle(&mut self) -> Result<u16, I2C::Error> {
