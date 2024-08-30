@@ -121,8 +121,8 @@ impl <I2C: I2c> AS5600<I2C> {
     }
 
     pub fn read_angle(&mut self) -> Result<u16, I2C::Error> {
-        let data: u16 = 0;
-        Ok(data)
+        let angle = self.read_12bits(OutputRegisters::AngleHi as u8)?;
+        Ok(angle)
     }
 
     pub fn read_raw_angle(&mut self) -> Result<u16, I2C::Error> {
