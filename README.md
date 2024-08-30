@@ -9,6 +9,21 @@ version of the embedded-hal.
 It should be able to read and configure most the registers for the device; 
 however burning and changing the I2C functionality isn't yet implimented.
 
+## Sensor Pinout
+
+Below is a basic overview of the sensor packges pinout, but make sure to 
+checkout the data sheet for more detail.
+
+1. VDD5V:: 5v supply pin.
+2. VDD3V3:: 3.3v supply pin.
+3. OUT:: PWM output 
+4. GND:: Ground pin.
+5. PGO:: Digital Input for Programming Option
+6. SDA:: I2C Data.
+7. SCL:: I2C Clock.
+8. DIR:: Digital Input for Direction(GND = ClockWise/VDD = CounterClockWise)
+
+
 ## Usage
 
 ### Adding to project
