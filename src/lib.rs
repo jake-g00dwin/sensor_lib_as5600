@@ -154,6 +154,18 @@ impl <I2C: I2c> AS5600<I2C> {
         )?;
         Ok(())
     }
+
+    pub fn read_12bits(&mut self, address: u8) -> Result<u16, I2C::Error> {
+        let mut bytes: [u8; 2] = [0x00, 0x00];
+
+        self.i2c.write_read(
+            SENSOR_ADDR,
+            &[address],
+            &mut bytes 
+        )?;
+        
+        Ok(bytes_to_u16(bytes))
+    }
     //Example from the embedded-hal 1.0.0 docs
     /*
     pub fn read_temperature(&mut self) -> Result<u8, I2C::Error> {
@@ -225,9 +237,9 @@ mod sensor_test {
 
     #[test]
     fn i2c_read_12bits() {
-        led expectations = [
-            I2cTransaction::write_read(SENSOR_ADDR, vec![0x05, 0x0F, 0xFF]),
-            I2cTransaction::write_read(SENSOR_ADDR, vec![0x06, 0x00, 0x00]),
+        let expectations = [
+            I2cTransaction::write_read(SENSOR_ADDR, vec![0x05], vec![0x0F, 0xFF]),
+            I2cTransaction::write_read(SENSOR_ADDR, vec![0x06], vec![0x00, 0x00]),
         ];
 
         let i2c = I2cMock::new(&expectations);
