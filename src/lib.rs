@@ -363,6 +363,47 @@ mod sensor_test {
         sensor.i2c.done();
     }
 
+
+    #[test]
+    fn test_reading_agc() {
+        let expect = [
+            I2cTransaction::write_read(
+                SENSOR_ADDR,
+                vec![(StatusRegisters::AGC as u8)],
+                vec![0x0F, 0xFF],
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expect);
+        let mut sensor = AS5600::new(i2c);
+        
+        let result = sensor.read_agc();
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0x0FFF);
+
+        sensor.i2c.done();
+    }
+
+    #[test]
+    fn test_reading_magnitude() {
+        let expect = [
+            I2cTransaction::write_read(
+                SENSOR_ADDR,
+                vec![(StatusRegisters::MagnitudeHi as u8)],
+                vec![0x0F, 0xFF],
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expect);
+        let mut sensor = AS5600::new(i2c);
+        
+        let result = sensor.read_magnitude();
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0x0FFF);
+
+        sensor.i2c.done();
+    }
+
     #[test]
     fn test_reading_angle() {
         let expect = [
