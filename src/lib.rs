@@ -141,7 +141,19 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(bytes_to_u16(rbuf))
     }
 
+    pub fn write_12bits(&mut self, address: u8, value: u16) -> Result<(), I2C::Error> {
+        let mut data: [u8; 2];
+        data = value.to_be_bytes();
 
+        //Ensure that the only 12bits are used.
+        data[0] &= 0x0F;
+
+        self.i2c.write(
+            SENSOR_ADDR,
+            &[address, data[0], data[1]]
+        )?;
+        Ok(())
+    }
     //Example from the embedded-hal 1.0.0 docs
     /*
     pub fn read_temperature(&mut self) -> Result<u8, I2C::Error> {
@@ -193,6 +205,25 @@ mod sensor_test {
     }
 
     #[test]
+    fn i2c_writes_u16() {
+        let expectations = [
+            I2cTransaction::write(SENSOR_ADDR, vec![0x05, 0x0F, 0xFF]),
+            I2cTransaction::write(SENSOR_ADDR, vec![0x06, 0x0A, 0xAA]),
+        ];
+
+        let i2c = I2cMock::new(&expectations);
+        let mut sensor = AS5600::new(i2c);
+
+        let result = sensor.write_12bits(0x05, 0xFFFF);
+        assert!(result.is_ok());
+
+        let result = sensor.write_12bits(0x06, 0xAAAA);
+        assert!(result.is_ok());
+
+        sensor.i2c.done();
+    }
+
+    #[test]
     fn get_status() { 
         let expectations = [
             I2cTransaction::write_read(
@@ -226,8 +257,6 @@ mod sensor_test {
         
         let i2c = I2cMock::new(&expectations);
 
-        //SHOULD RETURN AN Result<SensorStatus, I2C::Error>
-        //This isn't the case however?
         let mut sensor = AS5600::new(i2c);
         let err = sensor.read_status().unwrap_err();
         assert_eq!(err, ErrorKind::Bus);
