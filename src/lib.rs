@@ -79,24 +79,9 @@ impl <I2C: I2c> AS5600<I2C> {
     }
 
     pub fn config_start_position(&mut self, start: u16) -> Result<u16, I2C::Error> {
-        let data: [u8; 2];
-        data = start.to_be_bytes();
-        
-        let buf: [u8; 3] = [(ConfigRegisters::ZPosHi as u8), data[0], data[1]];
-        let mut rbuf: [u8; 2] = [0x00, 0x00];
-
-        self.i2c.write(
-            SENSOR_ADDR,
-            &buf,
-        )?;
-        
-        self.i2c.write_read(
-            SENSOR_ADDR,
-            &[ConfigRegisters::ZPosHi as u8],
-            &mut rbuf,
-        )?;
-        
-        Ok(bytes_to_u16(rbuf))
+        self.write_12bits(ConfigRegisters::ZPosHi as u8, start)?;
+        let verify_value = self.read_12bits(ConfigRegisters::ZPosHi as u8)?;
+        Ok(verify_value)
     }
 
     pub fn config_stop_position(&mut self, stop: u16) -> Result<u16, I2C::Error> {
