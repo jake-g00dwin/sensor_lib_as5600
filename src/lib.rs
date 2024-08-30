@@ -224,6 +224,25 @@ mod sensor_test {
     }
 
     #[test]
+    fn i2c_read_12bits() {
+        led expectations = [
+            I2cTransaction::write_read(SENSOR_ADDR, vec![0x05, 0x0F, 0xFF]),
+            I2cTransaction::write_read(SENSOR_ADDR, vec![0x06, 0x00, 0x00]),
+        ];
+
+        let i2c = I2cMock::new(&expectations);
+        let mut sensor = AS5600::new(i2c);
+
+        let result = sensor.read_12bits(0x05);
+        assert_eq!(result.unwrap(), 0x0FFF);
+
+        let result = sensor.read_12bits(0x06);
+        assert_eq!(result.unwrap(), 0x0000);
+
+        sensor.i2c.done();
+    }
+
+    #[test]
     fn get_status() { 
         let expectations = [
             I2cTransaction::write_read(
