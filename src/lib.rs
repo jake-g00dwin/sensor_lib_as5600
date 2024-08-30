@@ -85,7 +85,6 @@ impl <I2C: I2c> AS5600<I2C> {
     }
 
     pub fn config_stop_position(&mut self, stop: u16) -> Result<u16, I2C::Error> {
-
         self.write_12bits(ConfigRegisters::MPosHi as u8, stop)?;
         let verify_value = self.read_12bits(ConfigRegisters::MPosHi as u8)?;
         Ok(verify_value)
@@ -109,6 +108,26 @@ impl <I2C: I2c> AS5600<I2C> {
             &[address, data[0], data[1]]
         )?;
         Ok(())
+    }
+
+    pub fn read_agc(&mut self) -> Result<u16, I2C::Error> {
+        let data: u16 = 0;
+        Ok(data)
+    }
+
+    pub fn read_magnitude(&mut self) -> Result<u16, I2C::Error> {
+        let data: u16 = 0;
+        Ok(data)
+    }
+
+    pub fn read_angle(&mut self) -> Result<u16, I2C::Error> {
+        let data: u16 = 0;
+        Ok(data)
+    }
+
+    pub fn read_raw_angle(&mut self) -> Result<u16, I2C::Error> {
+        let data: u16 = 0;
+        Ok(data)
     }
 
     pub fn read_12bits(&mut self, address: u8) -> Result<u16, I2C::Error> {
