@@ -41,8 +41,8 @@ cargo test
 
 ## Roadmap
 
-- [ ] Define all Bitmasks for registers.
-- [ ] Add non-default i2c addressing.
+- [X] Define all Bitmasks for registers.
+- [X] Add non-default i2c addressing.
 - [ ] setup un-initialized and initialized versions of the sensor.
 - [ ] Add example usage.
 - [ ] Create an example repo for drop-in uC examples.
