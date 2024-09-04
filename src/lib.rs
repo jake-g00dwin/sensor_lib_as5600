@@ -59,18 +59,19 @@ fn bytes_to_u16(bytes: [u8; 2]) -> u16 {
 
 pub struct AS5600<I2C>{
     i2c: I2C,
+    address: u8,
 }
 
 impl <I2C: I2c> AS5600<I2C> {
-    pub fn new(i2c: I2C) -> Self {
-        Self { i2c }
+    pub fn new(i2c: I2C, address: u8) -> Self {
+        Self { i2c, address}
     }
 
     pub fn read_status(&mut self) -> Result<SensorStatus, I2C::Error> {
         let mut buf: [u8; 1] = [0x00];
         
         self.i2c.write_read(
-            SENSOR_ADDR,
+            self.address,
             &[StatusRegisters::Status as u8],
             &mut buf
         )?;
@@ -120,11 +121,11 @@ impl <I2C: I2c> AS5600<I2C> {
 
     pub fn set_temporary_address(&mut self, address: u8) -> Result<(), I2C::Error> {
         self.i2c.write(
-            SENSOR_ADDR,
+            self.address,
             &[(ConfigRegisters::I2cAddr as u8), address]
         )?;
         self.i2c.write(
-            SENSOR_ADDR,
+            self.address,
             &[(ConfigRegisters::I2cUpdt as u8), address]
         )?;
 
@@ -133,7 +134,7 @@ impl <I2C: I2c> AS5600<I2C> {
 
     pub fn burn_setting(&mut self) -> Result<(), I2C::Error> {
         self.i2c.write(
-            SENSOR_ADDR,
+            self.address,
             &[(BurnCommands::Burn as u8), 0x40]
         )?;
         Ok(())
@@ -143,7 +144,7 @@ impl <I2C: I2c> AS5600<I2C> {
         let mut bytes: [u8; 2] = [0x00, 0x00];
 
         self.i2c.write_read(
-            SENSOR_ADDR,
+            self.address,
             &[address],
             &mut bytes 
         )?;
@@ -159,7 +160,7 @@ impl <I2C: I2c> AS5600<I2C> {
         data[0] &= 0x0F;
 
         self.i2c.write(
-            SENSOR_ADDR,
+            self.address,
             &[address, data[0], data[1]]
         )?;
         Ok(())
@@ -215,7 +216,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expectations);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
 
         let result = sensor.write_12bits(0x05, 0xFFFF);
         assert!(result.is_ok());
@@ -234,7 +235,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expectations);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
 
         let result = sensor.read_12bits(0x05);
         assert_eq!(result.unwrap(), 0x0FFF);
@@ -257,7 +258,7 @@ mod sensor_test {
 
         let i2c = I2cMock::new(&expectations);
        
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
         let status = sensor.read_status();
         assert!(status.is_ok());
         
@@ -279,7 +280,7 @@ mod sensor_test {
         
         let i2c = I2cMock::new(&expectations);
 
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
         let err = sensor.read_status().unwrap_err();
         assert_eq!(err, ErrorKind::Bus);
         
@@ -302,7 +303,7 @@ mod sensor_test {
 
         let i2c = I2cMock::new(&expect);
 
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
       
         let start: u16 = 0;
         let result = sensor.config_start_position(start);
@@ -327,7 +328,7 @@ mod sensor_test {
 
         let i2c = I2cMock::new(&expect);
 
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
       
         let start: u16 = 4095;
         let result = sensor.config_start_position(start);
@@ -352,7 +353,7 @@ mod sensor_test {
 
         let i2c = I2cMock::new(&expect);
 
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
       
         let start: u16 = 0x0FFF;
         let result = sensor.config_stop_position(start);
@@ -378,7 +379,7 @@ mod sensor_test {
 
         let i2c = I2cMock::new(&expect);
 
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
       
         let angle_range: u16 = 0x0FFF;
         let result = sensor.config_angular_range(angle_range);
@@ -399,7 +400,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expect);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
         
         let result = sensor.read_agc();
         assert!(result.is_ok());
@@ -419,7 +420,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expect);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
         
         let result = sensor.read_magnitude();
         assert!(result.is_ok());
@@ -439,7 +440,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expect);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
         
         let result = sensor.read_angle();
         assert!(result.is_ok());
@@ -460,7 +461,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expect);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
         
         let result = sensor.read_raw_angle();
         assert!(result.is_ok());
@@ -483,7 +484,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expect);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
        
         let address: u8 = 0x41;
         let result = sensor.set_temporary_address(address);
@@ -503,7 +504,7 @@ mod sensor_test {
         ];
 
         let i2c = I2cMock::new(&expect);
-        let mut sensor = AS5600::new(i2c);
+        let mut sensor = AS5600::new(i2c, SENSOR_ADDR);
        
         let result = sensor.burn_setting();
         assert!(result.is_ok());
