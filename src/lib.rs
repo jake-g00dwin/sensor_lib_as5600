@@ -96,19 +96,6 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(verify_value)
     }
 
-    pub fn write_12bits(&mut self, address: u8, value: u16) -> Result<(), I2C::Error> {
-        let mut data: [u8; 2];
-        data = value.to_be_bytes();
-
-        //Ensure that the only 12bits are used.
-        data[0] &= 0x0F;
-
-        self.i2c.write(
-            SENSOR_ADDR,
-            &[address, data[0], data[1]]
-        )?;
-        Ok(())
-    }
 
     pub fn read_agc(&mut self) -> Result<u16, I2C::Error> {
         let agc = self.read_12bits(StatusRegisters::AGC as u8)?;
@@ -130,6 +117,20 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(angle)
     }
 
+
+    pub fn set_temporary_address(&mut self, address: u8) -> Result<(), I2C::Error> {
+        self.i2c.write(
+            SENSOR_ADDR,
+            &[(ConfigRegisters::I2cAddr as u8), address]
+        )?;
+        self.i2c.write(
+            SENSOR_ADDR,
+            &[(ConfigRegisters::I2cUpdt as u8), address]
+        )?;
+
+        Ok(())
+    }
+
     pub fn read_12bits(&mut self, address: u8) -> Result<u16, I2C::Error> {
         let mut bytes: [u8; 2] = [0x00, 0x00];
 
@@ -141,6 +142,21 @@ impl <I2C: I2c> AS5600<I2C> {
         
         Ok(bytes_to_u16(bytes))
     }
+
+    pub fn write_12bits(&mut self, address: u8, value: u16) -> Result<(), I2C::Error> {
+        let mut data: [u8; 2];
+        data = value.to_be_bytes();
+
+        //Ensure that the only 12bits are used.
+        data[0] &= 0x0F;
+
+        self.i2c.write(
+            SENSOR_ADDR,
+            &[address, data[0], data[1]]
+        )?;
+        Ok(())
+    }
+
 }
 
 
@@ -444,4 +460,28 @@ mod sensor_test {
 
         sensor.i2c.done();
     }
+
+    #[test]
+    fn test_tempoary_address_change() {
+        let expect = [
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::I2cAddr as u8), 0x41],
+            ),
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![(ConfigRegisters::I2cUpdt as u8), 0x41],
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expect);
+        let mut sensor = AS5600::new(i2c);
+       
+        let address: u8 = 0x41;
+        let result = sensor.set_temporary_address(address);
+        assert!(result.is_ok());
+
+        sensor.i2c.done();
+    }
+    
 }
