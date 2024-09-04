@@ -132,6 +132,10 @@ impl <I2C: I2c> AS5600<I2C> {
     }
 
     pub fn burn_setting(&mut self) -> Result<(), I2C::Error> {
+        self.i2c.write(
+            SENSOR_ADDR,
+            &[(BurnCommands::Burn as u8), 0x40]
+        )?;
         Ok(())
     }
 
@@ -501,7 +505,6 @@ mod sensor_test {
         let i2c = I2cMock::new(&expect);
         let mut sensor = AS5600::new(i2c);
        
-        let address: u8 = 0x41;
         let result = sensor.burn_setting();
         assert!(result.is_ok());
 
