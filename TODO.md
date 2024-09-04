@@ -32,4 +32,7 @@ Main library source file.
 - Create and destroy as5600 instance.
 - Can change the sensor address.
 - Can Read the sensor status.
- 
+
+
+- [ ] Impliment i2c address changing.
+- [ ] Impliment the burn setting command.
