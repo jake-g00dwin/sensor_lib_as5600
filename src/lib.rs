@@ -131,6 +131,10 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(())
     }
 
+    pub fn burn_setting(&mut self) -> Result<(), I2C::Error> {
+        Ok(())
+    }
+
     pub fn read_12bits(&mut self, address: u8) -> Result<u16, I2C::Error> {
         let mut bytes: [u8; 2] = [0x00, 0x00];
 
@@ -483,5 +487,25 @@ mod sensor_test {
 
         sensor.i2c.done();
     }
-    
+
+
+    #[test]
+    fn test_burn_setting_cmd() {
+        let expect = [
+            I2cTransaction::write(
+                SENSOR_ADDR,
+                vec![(BurnCommands::Burn as u8), 0x40],
+            ),
+        ];
+
+        let i2c = I2cMock::new(&expect);
+        let mut sensor = AS5600::new(i2c);
+       
+        let address: u8 = 0x41;
+        let result = sensor.burn_setting();
+        assert!(result.is_ok());
+
+        sensor.i2c.done();
+    }
+
 }
