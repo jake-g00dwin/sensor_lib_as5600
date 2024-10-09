@@ -34,5 +34,5 @@ Main library source file.
 - Can Read the sensor status.
 
 
-- [ ] Impliment i2c address changing.
-- [ ] Impliment the burn setting command.
+- [X] Impliment i2c address changing.
+- [X] Impliment the burn setting command.
