@@ -1,6 +1,6 @@
 [package]
 name = "sensor_lib_as5600"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Jake Goodwin <jakegoodwin@gorge.works>"]
 edition = "2021"
 categories = ["embedded", "hardware-support", "no-std", "embedded-hal"]
