@@ -98,10 +98,13 @@ pub struct AS5600<I2C>{
 }
 
 impl <I2C: I2c> AS5600<I2C> {
+
+    /// Creates a new instance of the AS5600 structure.
     pub fn new(i2c: I2C, address: u8) -> Self {
         Self { i2c, address}
     }
 
+    /// Reads the status of the AS5600 sensor.
     pub fn read_status(&mut self) -> Result<SensorStatus, I2C::Error> {
         let mut buf: [u8; 1] = [0x00];
         
@@ -132,7 +135,14 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(verify_value)
     }
 
-
+    /// Reads the current AGC(automatic gain control).
+    ///
+    /// AGC compensates for variations in magnetic field strength. The AGC
+    /// register indicates gain. In 5v mode the range is 0-255 while in 3.3v
+    /// mode the range is 0-128.
+    ///
+    /// You should ensure that it's centered in range when installed for your
+    /// applicaiton.
     pub fn read_agc(&mut self) -> Result<u16, I2C::Error> {
         let agc = self.read_12bits(StatusRegisters::AGC as u8)?;
         Ok(agc)
@@ -143,17 +153,31 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(magnitude)
     }
 
+    /// Reads the angle value from the output registers.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let mut as5600 = AS5600::new(i2c, addr);
+    ///
+    /// //Reads the 12bits of angle info giving a value between 0-4096
+    /// let angle: u16 = as5600.read_angle()?;
+    ///
+    /// ```
     pub fn read_angle(&mut self) -> Result<u16, I2C::Error> {
         let angle = self.read_12bits(OutputRegisters::AngleHi as u8)?;
         Ok(angle)
     }
 
+    /// Reads the unscaled and unmodified angle.
+    ///
+    /// The scaled output is availble through the `read_angle()` funciton.
     pub fn read_raw_angle(&mut self) -> Result<u16, I2C::Error> {
         let angle = self.read_12bits(OutputRegisters::RawAngleHi as u8)?;
         Ok(angle)
     }
 
-
+    /// Sets a temporary i2c address for the device.
     pub fn set_temporary_address(&mut self, address: u8) -> Result<(), I2C::Error> {
         self.i2c.write(
             self.address,
@@ -167,6 +191,7 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(())
     }
 
+    /// Burn the current configuration settings; permanant action!
     pub fn burn_setting(&mut self) -> Result<(), I2C::Error> {
         self.i2c.write(
             self.address,
@@ -175,6 +200,15 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(())
     }
 
+    /// Reads 12bits of information from i2c device from a address(u8).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// //Reads the Hi+Lo angle registers into a 16bit u16 return value.
+    /// let angle = self.read_12bits(OutputRegisters::AngleHi as u8)?;
+    ///
+    /// ```
     pub fn read_12bits(&mut self, address: u8) -> Result<u16, I2C::Error> {
         let mut bytes: [u8; 2] = [0x00, 0x00];
 
@@ -187,6 +221,17 @@ impl <I2C: I2c> AS5600<I2C> {
         Ok(bytes_to_u16(bytes))
     }
 
+
+    /// Writes 12bits of information to the i2c device to a address(u8).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// //Writes 12bits of info into the configuration register
+    /// // where 'start' is a u16 value.
+    /// self.write_12bits(ConfigRegisters::ZPosHi as u8, start)?;
+    ///
+    /// ```
     pub fn write_12bits(&mut self, address: u8, value: u16) -> Result<(), I2C::Error> {
         let mut data: [u8; 2];
         data = value.to_be_bytes();
