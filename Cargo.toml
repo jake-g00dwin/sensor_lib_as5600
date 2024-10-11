@@ -6,7 +6,7 @@ edition = "2021"
 categories = ["embedded", "hardware-support", "no-std", "embedded-hal"]
 description = "A driver for the AS5600 sensor module."
 readme = "README.md"
-keywords = ["embedded-hal-driver", "sensor", "magnetic", "rotary", "encoder", "as5600"]
+keywords = ["embedded-hal-driver", "sensor", "magnetic", "rotary", "encoder"]
 license = "BSD-3-Clause"
 repository = "https://github.com/jake-g00dwin/sensor_lib_as5600"
 
