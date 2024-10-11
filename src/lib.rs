@@ -1,14 +1,49 @@
 //! AS5600 I2C driver:
 //!
-//! Provides a unit tested driver to access the AHT2X series of sensor modules, 
+//! Provides a unit tested driver to access the AS5600 series of sensor modules, 
 //! focuses on:
 //! 
 //! - Providing reliable data.
 //! - A safer interface to an i2c sensor.
 //! - No infinite loops.
-//! - No external dependencies for CRC checksums.
 //! - No assumption of reliable hardware(passes back error messages) 
 //!
+//!
+//! To see a full functional demo of the crate/repo in use you can checkout the
+//! repo at the following URL:
+//! [`ch32v203_as5600_demo`](https://github.com/jake-g00dwin/ch32v203_as5600_demo)
+//!
+//!```rust,ignore
+//!
+//! use sensor_lib_as5600::AS5600;
+//!
+//! /*--SNIP--*/
+//!
+//!#[entry]
+//!fn main() -> ! {
+//! 
+//! /*--SNIP--*/
+//!
+//! //Device specific I2C pins(ch32v203kxt6)
+//! let scl = p.PB6;
+//! let sda = p.PB7;
+//!
+//! let i2c_config = hal::Config::default();
+//! let i2c = I2c::new_blocking(p.I2C1, scl, sda, Hertz::hz(100_000), Default::default());
+//!
+//! let addr = 0x36;
+//! let mut as5600 = AS5600::new(i2c, addr);
+//!
+//!
+//! let mut angle: u16 = 0;
+//!
+//! angle = as5600.read_angle().unwrap();
+//!
+//!}
+//!```
+//!
+//!The above example is shortened code demoing how you can use the sensor
+//!library.
 
 
 
@@ -38,7 +73,7 @@ mod registers;
 #[allow(unused_imports)]
 pub use crate::registers::{
     ConfigRegisters,
-    OutputRegisters,
+OutputRegisters,
     StatusRegisters,
     BurnCommands,
 };
