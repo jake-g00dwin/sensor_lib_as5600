@@ -28,6 +28,13 @@ checkout the data sheet for more detail.
 There are two ways to add the crate/repo to your project. You can use the 
 github URL or you can add it via the normal crates name(TBD).
 
+
+**Cargo.toml**
+```toml
+sensor_lib_as5600 = {git = 'https://github.com/jake-g00dwin/sensor_lib_as5600'}
+```
+
+
 ### Running Tests
 
 To run the tests for the project after downloading or cloning the repo
