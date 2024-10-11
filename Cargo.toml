@@ -1,5 +1,6 @@
 [package]
 name = "sensor_lib_as5600"
+version = "0.1.0"
 authors = ["Jake Goodwin <jakegoodwin@gorge.works>"]
 edition = "2021"
 categories = ["embedded", "hardware-support", "no-std", "embedded-hal"]
@@ -7,7 +8,7 @@ description = "A driver for the AS5600 sensor module."
 readme = "README.md"
 keywords = ["embedded-hal-driver", "sensor", "magnetic", "rotary", "encoder"]
 license = "BSD-3-Clause"
-#repository = "https://"
+#repository = "https://github.com/jake-g00dwin/sensor_lib_as5600"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 # This should be correct
